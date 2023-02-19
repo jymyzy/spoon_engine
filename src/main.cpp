@@ -134,11 +134,7 @@ class Game
     int enpassant = 0;
     int halfMoves = 0;
 
-    Game()
-    {
-    }
-
-    Game(std::string fen)
+    Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     {
         setFromFen(fen);
     }
