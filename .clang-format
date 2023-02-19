@@ -1,0 +1,27 @@
+Language: Cpp
+Standard: c++17
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 0
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterCaseLabel: true
+    AfterClass: true
+    AfterControlStatement: true
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: true
+    AfterObjCDeclaration: true
+    AfterStruct: true
+    AfterUnion: true
+    AfterExternBlock: true
+    BeforeCatch: true
+    BeforeElse: true
+    BeforeLambdaBody: false
+    BeforeWhile: true
+    SplitEmptyFunction: true
+    SplitEmptyRecord: true
+    SplitEmptyNamespace: true
+SpacesBeforeTrailingComments: 1
+AccessModifierOffset: -2
+AlignAfterOpenBracket: BlockIndent
