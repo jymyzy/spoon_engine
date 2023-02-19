@@ -29,16 +29,16 @@ std::vector<std::string> splitString(std::string string, char splitter)
     std::string currentString = "";
     string += " ";
 
-    for (int i = 0; i < string.length(); i++)
+    for (char character : string)
     {
-        if (char(string[i]) == splitter)
+        if (character == splitter)
         {
             strings.push_back(currentString);
             currentString = "";
         }
         else
         {
-            currentString += string[i];
+            currentString += character;
         }
     }
 
@@ -47,7 +47,7 @@ std::vector<std::string> splitString(std::string string, char splitter)
 
 int squareToIndex(std::string square)
 {
-    return (int(square[1]) - 47) * 10 + (int(square[0]) - 95);
+    return (square[1] - 47) * 10 + (square[0] - 95);
 }
 
 std::string numberToPiece(int piece)
@@ -151,6 +151,14 @@ class Game
         {
             std::cerr << "Hurr durr, huono fen (fen väärän pituinen)" << std::endl;
             return;
+        }
+
+        for (int i = 2; i < 10; i++) // clear board
+        {
+            for (int j = 1; j < 9; j++)
+            {
+                board[i * 10 + j] = EMPTY;
+            }
         }
 
         int currentSquare = 21;
@@ -300,6 +308,6 @@ class Game
 
 int main()
 {
-    Game* game = new Game("r2q1rk1/1p3ppp/p1b1p3/P1PpPn2/1P3P1b/2P2N2/6PP/RNBQ1RK1 w - - 1 14");
+    Game* game = new Game();
     game->print();
 }
