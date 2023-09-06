@@ -1,11 +1,11 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include <bitset>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdint>
-#include <bitset>
 
 typedef uint64_t bitboard;
 
@@ -57,7 +57,7 @@ std::vector<std::string> splitString(std::string string, char splitter)
 
 int squareToIndex(std::string square)
 {
-    return (square[1] - 48) * 8 + (square[0] - 65);
+    return (square[0] - 97) * 8 + (square[1] - 49);
 }
 
 std::string numberToPiece(int piece)
@@ -121,19 +121,19 @@ class Game
 
     bitboard bitboards[16];
 
-    void setFromFen(std::string fen) 
-    { 
+    void setFromFen(std::string fen)
+    {
         uint64_t currentSquare = 1;
         std::vector<std::string> fenParts = splitString(fen, ' ');
-        for(char &letter : fenParts[0])
+        for (char &letter : fenParts[0])
         {
             if (isdigit(letter))
             {
-                currentSquare = currentSquare << ((letter) - 48);
+                currentSquare = currentSquare << ((letter)-48);
             }
-            else 
+            else
             {
-                switch(letter)
+                switch (letter)
                 {
                     case 'P':
                         bitboards[PAWN_WHITE] = bitboards[PAWN_WHITE] | currentSquare;
@@ -185,23 +185,23 @@ class Game
                         break;
                     case '/':
                         break;
-                    default: 
-                        std::cerr << "invalid fen (Includes invalid pieces)" << std::endl; 
+                    default:
+                        std::cerr << "invalid fen (Includes invalid pieces)" << std::endl;
                 }
             }
 
-            if(fenParts[1] == "w") 
+            if (fenParts[1] == "w")
             {
                 currentTurn = 1;
-            } 
-            else 
+            }
+            else
             {
                 currentTurn = -1;
             }
 
-            for(char &letter : fenParts[2]) 
+            for (char &letter : fenParts[2])
             {
-                switch(letter) 
+                switch (letter)
                 {
                     case 'K':
                         castlingRights = castlingRights | WHITE_KINGSIDE;
@@ -222,28 +222,55 @@ class Game
             {
                 continue;
             }
-            else 
+            else
             {
                 enpassant = squareToIndex(fenParts[3]);
             }
+
+            halfMoves = stoi(fenParts[4]);
         }
     }
 
-    Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq a1 0 1") 
+    Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     {
         setFromFen(fen);
     }
-    
+
     void print()
     {
-        std::bitset<64> x(bitboards[PAWN_WHITE]);
-        std::cout << x << std::endl;
-        std::cout << enpassant << std::endl;
-    }   
+        std::string board[64];
+        int pieces[12] = {PAWN_WHITE, PAWN_BLACK, KNIGHT_WHITE, KNIGHT_BLACK, BISHOP_WHITE, BISHOP_BLACK, ROOK_WHITE, ROOK_BLACK, QUEEN_WHITE, QUEEN_BLACK, KING_WHITE, KING_BLACK};
+        for (int piece : pieces)
+        {
+            std::bitset<64> pieceLocations(bitboards[piece]);
+            for (int i = 0; i < pieceLocations.size(); i++)
+            {
+                if (pieceLocations[i])
+                {
+                    board[i] = numberToPiece(piece);
+                }
+            }
+        }
+
+        std::cout << "+-----+-----+-----+-----+-----+-----+-----+-----+" << std::endl;
+        for (int i = 0; i < 8; i++)
+        {
+            std::cout << "|     |     |     |     |     |     |     |     |" << std::endl;
+            std::cout << "|";
+            for (int j = 0; j < 8; j++)
+            {
+                std::cout << "  " << (board[i * 8 + j] == "" ? " " : board[i * 8 + j]) << "  ";
+                std::cout << "|";
+            }
+            std::cout << std::endl;
+            std::cout << "|     |     |     |     |     |     |     |     |" << std::endl;
+            std::cout << "+-----+-----+-----+-----+-----+-----+-----+-----+" << std::endl;
+        }
+    }
 };
 
 int main()
 {
-    Game* game = new Game();
+    Game *game = new Game("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
     game->print();
 }
