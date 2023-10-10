@@ -267,10 +267,42 @@ class Game
             std::cout << "+-----+-----+-----+-----+-----+-----+-----+-----+" << std::endl;
         }
     }
+
+    std::vector<Move> getMoves() 
+    {
+        std::vector<Move> moves;
+        bitboard whitePieces = bitboards[PAWN_WHITE]|bitboards[KNIGHT_WHITE]|bitboards[BISHOP_WHITE]|bitboards[ROOK_WHITE]|bitboards[QUEEN_WHITE]|bitboards[KING_WHITE];
+        bitboard blackPieces = bitboards[PAWN_BLACK]|bitboards[KNIGHT_BLACK]|bitboards[BISHOP_BLACK]|bitboards[ROOK_BLACK]|bitboards[QUEEN_BLACK]|bitboards[KING_BLACK];
+
+        int offset[6][8] = {
+            {   0,   0,  0,  0, 0,  0,  0,  0 },
+            { -21, -19,-12, -8, 8, 12, 19, 21 }, /* KNIGHT */
+            { -11,  -9,  9, 11, 0,  0,  0,  0 }, /* BISHOP */
+            { -10,  -1,  1, 10, 0,  0,  0,  0 }, /* ROOK */
+            { -11, -10, -9, -1, 1,  9, 10, 11 }, /* QUEEN */
+            { -11, -10, -9, -1, 1,  9, 10, 11 }  /* KING */
+        };
+
+        if (currentTurn > 0) // White 
+        {
+
+        }
+        else // Black 
+        {
+
+        }
+
+        return moves;
+    }
 };
 
 int main()
 {
     Game *game = new Game("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
     game->print();
+    std::vector<Move> moves = game->getMoves();
+    for (Move move : moves) 
+    {
+        std::cout << move.startSquare << " " << move.endSquare << std::endl;
+    }
 }
