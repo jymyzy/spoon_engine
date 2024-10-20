@@ -60,6 +60,11 @@ int squareToIndex(std::string square)
     return (square[0] - 97) * 8 + (square[1] - 49);
 }
 
+void printBitboard(bitboard board)
+{
+    std::cout << std::bitset<64> (board) << std::endl;
+}
+
 std::string numberToPiece(int piece)
 {
     switch (piece & 0b1111)
@@ -273,7 +278,8 @@ class Game
         std::vector<Move> moves;
         bitboard whitePieces = bitboards[PAWN_WHITE]|bitboards[KNIGHT_WHITE]|bitboards[BISHOP_WHITE]|bitboards[ROOK_WHITE]|bitboards[QUEEN_WHITE]|bitboards[KING_WHITE];
         bitboard blackPieces = bitboards[PAWN_BLACK]|bitboards[KNIGHT_BLACK]|bitboards[BISHOP_BLACK]|bitboards[ROOK_BLACK]|bitboards[QUEEN_BLACK]|bitboards[KING_BLACK];
-
+        bitboard emptySquares = ~(whitePieces|blackPieces);
+        
         int offset[6][8] = {
             {   0,   0,  0,  0, 0,  0,  0,  0 },
             { -21, -19,-12, -8, 8, 12, 19, 21 }, /* KNIGHT */
