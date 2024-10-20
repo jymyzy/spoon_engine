@@ -317,7 +317,28 @@ class Game
         }
         else // Black 
         {
+            //Pawn pushes
+            bitboard singlePushTargets = bitboards[PAWN_BLACK]<<8 & emptySquares;
+            std::bitset<64> singlePushTargetsBS(singlePushTargets);
 
+            for (int i = 0; i < 64; i++)
+            {
+                if(singlePushTargetsBS[i])
+                {
+                    moves.push_back(*new Move{i-8, i});
+                }
+            }
+
+            bitboard doublePushTargets = singlePushTargets<<8 & emptySquares & 0x00000000FF000000;
+            std::bitset<64> doublePushTargetsBS(doublePushTargets);
+
+            for (int i = 0; i < 64; i++)
+            {
+                if(doublePushTargetsBS[i])
+                {
+                    moves.push_back(*new Move{i-16, i});
+                }
+            }
         }
 
         return moves;
@@ -326,7 +347,7 @@ class Game
 
 int main()
 {
-    Game *game = new Game();
+    Game *game = new Game(/** "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"*/);
     game->print();
     std::vector<Move> moves = game->getMoves();
     for (Move move : moves) 
