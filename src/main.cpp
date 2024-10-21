@@ -60,9 +60,14 @@ int squareToIndex(std::string square)
     return (square[0] - 97) * 8 + (square[1] - 49);
 }
 
-void printBitboard(bitboard board)
-{
-    std::cout << std::bitset<64> (board) << std::endl;
+void printBitboard(bitboard board) {
+    for (int row = 7; row >= 0; --row) {   // Loop through rows (from row 7 to row 0)
+        for (int col = 0; col < 8; ++col) {  // Loop through columns
+            int square = row * 8 + col;      // Calculate the square index
+            std::cout << ((board >> square) & 1) << " ";  // Print the bit for the square
+        }
+        std::cout << std::endl;  // Move to the next row
+    }
 }
 
 std::string numberToPiece(int piece)
@@ -314,6 +319,42 @@ class Game
                 }
             }
 
+            // Knight moves
+            bitboard notAFile = 0xfefefefefefefefe;
+            bitboard notHFile = 0x7f7f7f7f7f7f7f7f;
+            bitboard notABFile = 0xfcfcfcfcfcfcfcfc;
+            bitboard notHGFile = 0x3f3f3f3f3f3f3f3f;
+            
+            bitboard knightSquare = 1;
+
+            for (int i = 0; i<64; i++)
+            {
+                if (bitboards[KNIGHT_WHITE] & knightSquare)
+                {
+                    bitboard targetSquares = 0;
+                    
+                    targetSquares |= ((knightSquare & notHFile) << 17) & emptySquares; // NNE
+                    targetSquares |= ((knightSquare & notHGFile) << 10) & emptySquares; // NEE
+                    targetSquares |= ((knightSquare & notHGFile) >> 6) & emptySquares; // SEE
+                    targetSquares |= ((knightSquare & notHFile) >> 15) & emptySquares; // SSE
+                    targetSquares |= ((knightSquare & notAFile) << 15) & emptySquares; // NNW  
+                    targetSquares |= ((knightSquare & notABFile) << 6) & emptySquares; // NWW
+                    targetSquares |= ((knightSquare & notABFile) >> 10) & emptySquares; // SWW
+                    targetSquares |= ((knightSquare & notAFile) >> 17) & emptySquares; //SSW
+
+
+                    for (int j = 0; j<64; ++j)
+                    {
+                        if (targetSquares & bitboard(1) << j)
+                        {
+                            moves.push_back(*new Move{i, j});
+                        }
+                    }
+
+                }
+                 
+                knightSquare <<= 1;
+            }
         }
         else // Black 
         {
@@ -347,7 +388,7 @@ class Game
 
 int main()
 {
-    Game *game = new Game(/** "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"*/);
+    Game *game = new Game(/** "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 1 2"*/);
     game->print();
     std::vector<Move> moves = game->getMoves();
     for (Move move : moves) 
