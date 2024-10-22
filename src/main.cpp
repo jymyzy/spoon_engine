@@ -380,6 +380,43 @@ class Game
                     moves.push_back(*new Move{i-16, i});
                 }
             }
+
+            // Knight moves
+            bitboard notAFile = 0xfefefefefefefefe;
+            bitboard notHFile = 0x7f7f7f7f7f7f7f7f;
+            bitboard notABFile = 0xfcfcfcfcfcfcfcfc;
+            bitboard notHGFile = 0x3f3f3f3f3f3f3f3f;
+            
+            bitboard knightSquare = 1;
+
+            for (int i = 0; i<64; i++)
+            {
+                if (bitboards[KNIGHT_BLACK] & knightSquare)
+                {
+                    bitboard targetSquares = 0;
+                    
+                    targetSquares |= ((knightSquare & notHFile) << 17) & emptySquares; // NNE
+                    targetSquares |= ((knightSquare & notHGFile) << 10) & emptySquares; // NEE
+                    targetSquares |= ((knightSquare & notHGFile) >> 6) & emptySquares; // SEE
+                    targetSquares |= ((knightSquare & notHFile) >> 15) & emptySquares; // SSE
+                    targetSquares |= ((knightSquare & notAFile) << 15) & emptySquares; // NNW  
+                    targetSquares |= ((knightSquare & notABFile) << 6) & emptySquares; // NWW
+                    targetSquares |= ((knightSquare & notABFile) >> 10) & emptySquares; // SWW
+                    targetSquares |= ((knightSquare & notAFile) >> 17) & emptySquares; //SSW
+
+
+                    for (int j = 0; j<64; ++j)
+                    {
+                        if (targetSquares & bitboard(1) << j)
+                        {
+                            moves.push_back(*new Move{i, j});
+                        }
+                    }
+
+                }
+                 
+                knightSquare <<= 1;
+            }
         }
 
         return moves;
@@ -388,7 +425,7 @@ class Game
 
 int main()
 {
-    Game *game = new Game(/** "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 1 2"*/);
+    Game *game = new Game("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
     game->print();
     std::vector<Move> moves = game->getMoves();
     for (Move move : moves) 
