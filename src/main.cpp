@@ -9,6 +9,16 @@
 
 typedef uint64_t bitboard;
 
+void printBitboard(bitboard board) {
+    for (int row = 7; row >= 0; --row) {   // Loop through rows (from row 7 to row 0)
+        for (int col = 0; col < 8; ++col) {  // Loop through columns
+            int square = row * 8 + col;      // Calculate the square index
+            std::cout << ((board >> square) & 1) << " ";  // Print the bit for the square
+        }
+        std::cout << std::endl;  // Move to the next row
+    }
+}
+
 const uint64_t RMagic[64] = {
     0x2080020500400f0ULL,
     0x28444000400010ULL,
@@ -74,7 +84,7 @@ const uint64_t RMagic[64] = {
     0x8008440100404241ULL,
     0x2420001111000bdULL,
     0x4000882304000041ULL,
-};
+  };
   
 const uint64_t BMagic[64] = {
     0x100420000431024ULL,
@@ -141,7 +151,137 @@ const uint64_t BMagic[64] = {
     0x500d082244010008ULL,
     0x28190d00040014e0ULL,
     0x825201600c082444ULL,
+  };
+  
+
+int RBits[64] = {
+    12, 11, 11, 11, 11, 11, 11, 12,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    11, 10, 10, 10, 10, 10, 10, 11,
+    12, 11, 11, 11, 11, 11, 11, 12
 };
+  
+int BBits[64] = {
+    6, 5, 5, 5, 5, 5, 5, 6,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 7, 7, 7, 7, 5, 5,
+    5, 5, 7, 9, 9, 7, 5, 5,
+    5, 5, 7, 9, 9, 7, 5, 5,
+    5, 5, 7, 7, 7, 7, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    6, 5, 5, 5, 5, 5, 5, 6
+};
+
+bitboard BAttackMasks[64][512];
+bitboard RAttackMasks[64][4096];
+
+bitboard generateRookMask(int square) {
+    bitboard mask = 0ULL;
+    int rank = square / 8;
+    int file = square % 8;
+
+    for (int r = rank + 1; r <= 6; r++) mask |= (1ULL << (r * 8 + file));
+    for (int r = rank - 1; r >= 1; r--) mask |= (1ULL << (r * 8 + file));
+    for (int f = file + 1; f <= 6; f++) mask |= (1ULL << (rank * 8 + f));
+    for (int f = file - 1; f >= 1; f--) mask |= (1ULL << (rank * 8 + f));
+
+    return mask;
+}
+
+int count_bits(bitboard bb) {
+    int count = 0;
+    while (bb) {
+        if (bb & 1) count++;
+        bb >>= 1;
+    }
+    return count;
+}
+
+bitboard set_occupancy(int index, int bits_in_mask, bitboard mask) {
+    bitboard occupancy = 0ULL;
+    int bit = 0;
+
+    for (int sq = 0; sq < 64; sq++) {
+        if (mask & (1ULL << sq)) {  // If the square is relevant
+            // If the corresponding bit in the index is set, place a blocker here
+            if (index & (1 << bit)) {
+                occupancy |= (1ULL << sq);
+            }
+
+            bit++;  // Move to the next bit
+        }
+    }
+
+    return occupancy;
+}
+
+bitboard rookAttacks(int square, bitboard occupancy) {
+    bitboard attacks = 0ULL;
+    bitboard blockers;
+    
+    int rank = square / 8;
+    int file = square % 8;
+
+    // **Upward (same file)**
+    blockers = occupancy & ((1ULL << square) - 1);  // Blockers below the square
+    for (int i = square - 8; i >= 0; i -= 8) {
+        if (blockers & (1ULL << i)) {
+            attacks |= (1ULL << i); // Add the blocker as an attack
+            break;  // Stop if blocked
+        }
+        attacks |= (1ULL << i);  // Add the square as an attack
+    }
+
+    // **Downward (same file)**
+    blockers = occupancy & ((1ULL << (63 - square)) - 1);  // Blockers above the square
+    for (int i = square + 8; i < 64; i += 8) {
+        if (blockers & (1ULL << i)) {
+            attacks |= (1ULL << i); // Add the blocker as an attack
+            break;  // Stop if blocked
+        }
+        attacks |= (1ULL << i);  // Add the square as an attack
+    }
+
+    // **Leftward (same rank)**
+    blockers = occupancy & ((1ULL << square) - 1);  // Blockers to the left
+    for (int i = square - 1; i >= rank * 8; --i) {
+        if (blockers & (1ULL << i)) {
+            attacks |= (1ULL << i); // Add the blocker as an attack
+            break;  // Stop if blocked
+        }
+        attacks |= (1ULL << i);  // Add the square as an attack
+    }
+
+    // **Rightward (same rank)**
+    blockers = occupancy & ((1ULL << (63 - square)) - 1);  // Blockers to the right
+    for (int i = square + 1; i < (rank + 1) * 8; ++i) {
+        if (blockers & (1ULL << i)) {
+            attacks |= (1ULL << i); // Add the blocker as an attack
+            break;  // Stop if blocked
+        }
+        attacks |= (1ULL << i);  // Add the square as an attack
+    }
+
+    return attacks;
+}
+
+
+void precomputeRookMoves(int square) {
+    bitboard mask = generateRookMask(square);
+    int relevant_bits = count_bits(mask);
+    int occupancyVariations = 1 << relevant_bits;
+
+    for (int index = 0; index < occupancyVariations; index++) {
+        bitboard occupancy = set_occupancy(index, relevant_bits, mask);
+        bitboard attacks = rookAttacks(square, occupancy);
+        
+        RAttackMasks[square][(RMagic[square]*occupancy) >> (64-relevant_bits)] = attacks;
+    }
+}
 
 enum Piece
 {
@@ -192,16 +332,6 @@ std::vector<std::string> splitString(std::string string, char splitter)
 int squareToIndex(std::string square)
 {
     return (square[0] - 97) * 8 + (square[1] - 49);
-}
-
-void printBitboard(bitboard board) {
-    for (int row = 7; row >= 0; --row) {   // Loop through rows (from row 7 to row 0)
-        for (int col = 0; col < 8; ++col) {  // Loop through columns
-            int square = row * 8 + col;      // Calculate the square index
-            std::cout << ((board >> square) & 1) << " ";  // Print the bit for the square
-        }
-        std::cout << std::endl;  // Move to the next row
-    }
 }
 
 std::string numberToPiece(int piece)
@@ -375,7 +505,7 @@ class Game
         }
     }
 
-    Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    Game(std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/1PPPPPP1/RNBQKBNR w KQkq - 0 1")
     {
         setFromFen(fen);
     }
@@ -418,15 +548,6 @@ class Game
         bitboard whitePieces = bitboards[PAWN_WHITE]|bitboards[KNIGHT_WHITE]|bitboards[BISHOP_WHITE]|bitboards[ROOK_WHITE]|bitboards[QUEEN_WHITE]|bitboards[KING_WHITE];
         bitboard blackPieces = bitboards[PAWN_BLACK]|bitboards[KNIGHT_BLACK]|bitboards[BISHOP_BLACK]|bitboards[ROOK_BLACK]|bitboards[QUEEN_BLACK]|bitboards[KING_BLACK];
         bitboard emptySquares = ~(whitePieces|blackPieces);
-        
-        int offset[6][8] = {
-            {   0,   0,  0,  0, 0,  0,  0,  0 },
-            { -21, -19,-12, -8, 8, 12, 19, 21 }, /* KNIGHT */
-            { -11,  -9,  9, 11, 0,  0,  0,  0 }, /* BISHOP */
-            { -10,  -1,  1, 10, 0,  0,  0,  0 }, /* ROOK */
-            { -11, -10, -9, -1, 1,  9, 10, 11 }, /* QUEEN */
-            { -11, -10, -9, -1, 1,  9, 10, 11 }  /* KING */
-        };
 
         if (currentTurn > 0) // White 
         {
@@ -461,7 +582,7 @@ class Game
             
             bitboard knightSquare = 1;
 
-            for (int i = 0; i<64; i++)
+            for (int i = 0; i < 64; i++)
             {
                 if (bitboards[KNIGHT_WHITE] & knightSquare)
                 {
@@ -489,6 +610,33 @@ class Game
                  
                 knightSquare <<= 1;
             }
+
+            // Rook moves
+            bitboard rookSquare = 1;
+            for (int i = 0; i < 64; i++)
+            {
+                if (bitboards[ROOK_WHITE] & rookSquare)
+                {
+
+                    bitboard occupancy = generateRookMask(i) & ~emptySquares;
+                    bitboard attacks = RAttackMasks[i][(occupancy*RMagic[i]) >> (64-RBits[i])];
+                    std::cout << i << std::endl;
+                    std::cout << ((occupancy*RMagic[i]) >> (64-RBits[i])) << std::endl;
+
+                    printBitboard(attacks);
+
+                    for (int j = 0; j < 64; ++j)
+                    {
+                        if (attacks & bitboard(1) << j)
+                        {
+                            moves.push_back(*new Move{i, j});
+                        }
+                    }
+                }
+
+                rookSquare <<= 1;
+            }
+
         }
         else // Black 
         {
@@ -558,8 +706,15 @@ class Game
 };
 
 int main()
-{
-    Game *game = new Game(/** "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"*/);
+{    
+    //Initialize magic bitboards
+    for (int square = 0; square < 64; square++)
+    {
+        precomputeRookMoves(square);
+    }    
+    std::cout << "Magic bitboards initialized!" << std::endl;
+ 
+    Game *game = new Game(/*"2r4R/2P1p1K1/3p4/1B5p/r2P4/2P2kP1/R2p3b/8 W - 0 1"*/);
     game->print();
     std::vector<Move> moves = game->getMoves();
     for (Move move : moves) 
