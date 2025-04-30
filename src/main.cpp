@@ -180,7 +180,7 @@ bitboard BAttackMasks[64][512];
 bitboard RAttackMasks[64][4096];
 
 bitboard generateRookMask(int square) {
-    bitboard mask = 0ULL;
+    bitboard mask = 0;
     int rank = square / 8;
     int file = square % 8;
 
@@ -206,13 +206,12 @@ bitboard set_occupancy(int index, int bits_in_mask, bitboard mask) {
     int bit = 0;
 
     for (int sq = 0; sq < 64; sq++) {
-        if (mask & (1ULL << sq)) {  // If the square is relevant
-            // If the corresponding bit in the index is set, place a blocker here
+        if (mask & (1ULL << sq)) {
             if (index & (1 << bit)) {
                 occupancy |= (1ULL << sq);
             }
 
-            bit++;  // Move to the next bit
+            bit++;
         }
     }
 
@@ -226,44 +225,40 @@ bitboard rookAttacks(int square, bitboard occupancy) {
     int rank = square / 8;
     int file = square % 8;
 
-    // **Upward (same file)**
-    blockers = occupancy & ((1ULL << square) - 1);  // Blockers below the square
+    blockers = occupancy & ((1ULL << square) - 1);
     for (int i = square - 8; i >= 0; i -= 8) {
         if (blockers & (1ULL << i)) {
-            attacks |= (1ULL << i); // Add the blocker as an attack
-            break;  // Stop if blocked
+            attacks |= (1ULL << i); 
+            break;  
         }
-        attacks |= (1ULL << i);  // Add the square as an attack
+        attacks |= (1ULL << i);
     }
 
-    // **Downward (same file)**
-    blockers = occupancy & ((1ULL << (63 - square)) - 1);  // Blockers above the square
+    blockers = occupancy & ((1ULL << (63 - square)) - 1); 
     for (int i = square + 8; i < 64; i += 8) {
         if (blockers & (1ULL << i)) {
-            attacks |= (1ULL << i); // Add the blocker as an attack
-            break;  // Stop if blocked
+            attacks |= (1ULL << i); 
+            break; 
         }
-        attacks |= (1ULL << i);  // Add the square as an attack
+        attacks |= (1ULL << i); 
     }
 
-    // **Leftward (same rank)**
-    blockers = occupancy & ((1ULL << square) - 1);  // Blockers to the left
+    blockers = occupancy & ((1ULL << square) - 1); 
     for (int i = square - 1; i >= rank * 8; --i) {
         if (blockers & (1ULL << i)) {
-            attacks |= (1ULL << i); // Add the blocker as an attack
-            break;  // Stop if blocked
+            attacks |= (1ULL << i); 
+            break;  
         }
-        attacks |= (1ULL << i);  // Add the square as an attack
+        attacks |= (1ULL << i); 
     }
 
-    // **Rightward (same rank)**
-    blockers = occupancy & ((1ULL << (63 - square)) - 1);  // Blockers to the right
+    blockers = occupancy & ((1ULL << (63 - square)) - 1);  
     for (int i = square + 1; i < (rank + 1) * 8; ++i) {
         if (blockers & (1ULL << i)) {
-            attacks |= (1ULL << i); // Add the blocker as an attack
-            break;  // Stop if blocked
+            attacks |= (1ULL << i); 
+            break;  
         }
-        attacks |= (1ULL << i);  // Add the square as an attack
+        attacks |= (1ULL << i);
     }
 
     return attacks;
@@ -712,10 +707,13 @@ int main()
     {
         precomputeRookMoves(square);
     }    
+
     std::cout << "Magic bitboards initialized!" << std::endl;
  
     Game *game = new Game(/*"2r4R/2P1p1K1/3p4/1B5p/r2P4/2P2kP1/R2p3b/8 W - 0 1"*/);
+
     game->print();
+
     std::vector<Move> moves = game->getMoves();
     for (Move move : moves) 
     {
