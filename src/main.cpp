@@ -10,12 +10,12 @@
 typedef uint64_t bitboard;
 
 void printBitboard(bitboard board) {
-    for (int row = 7; row >= 0; --row) {   // Loop through rows (from row 7 to row 0)
-        for (int col = 0; col < 8; ++col) {  // Loop through columns
-            int square = row * 8 + col;      // Calculate the square index
-            std::cout << ((board >> square) & 1) << " ";  // Print the bit for the square
+    for (int row = 7; row >= 0; --row) {
+        for (int col = 0; col < 8; ++col) {
+            int square = row * 8 + col;
+            std::cout << ((board >> square) & 1) << " ";
         }
-        std::cout << std::endl;  // Move to the next row
+        std::cout << std::endl;
     }
 }
 
@@ -612,13 +612,8 @@ class Game
             {
                 if (bitboards[ROOK_WHITE] & rookSquare)
                 {
-
                     bitboard occupancy = generateRookMask(i) & ~emptySquares;
                     bitboard attacks = RAttackMasks[i][(occupancy*RMagic[i]) >> (64-RBits[i])];
-                    std::cout << i << std::endl;
-                    std::cout << ((occupancy*RMagic[i]) >> (64-RBits[i])) << std::endl;
-
-                    printBitboard(attacks);
 
                     for (int j = 0; j < 64; ++j)
                     {
