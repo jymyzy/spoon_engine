@@ -613,7 +613,7 @@ class Game
                 if (bitboards[ROOK_WHITE] & rookSquare)
                 {
                     bitboard occupancy = generateRookMask(i) & ~emptySquares;
-                    bitboard attacks = RAttackMasks[i][(occupancy*RMagic[i]) >> (64-RBits[i])];
+                    bitboard attacks = RAttackMasks[i][(occupancy*RMagic[i]) >> (64-RBits[i])] & ~whitePieces;
 
                     for (int j = 0; j < 64; ++j)
                     {
