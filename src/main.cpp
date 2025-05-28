@@ -489,9 +489,11 @@ int main(int argc, char* argv[])
         precomputeRookMoves(square);
     }    
 
+    printBitboard(generateBishopMask(16));
+
     std::cout << "Magic bitboards initialized!" << std::endl;
  
-    Game *game = new Game(/*"2r4R/2P1p1K1/3p4/1B5p/r2P4/2P2kP1/R2p3b/8 W - 0 1"*/);
+    Game *game = new Game("rnbqkbnr/p3pp2/2p5/6p1/P7/6R1/1PPP1P2/RNBQKBN1 w Qkq - 0 9");
 
     game->print();
 

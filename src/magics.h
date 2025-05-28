@@ -169,6 +169,19 @@ bitboard generateRookMask(int square) {
     return mask;
 }
 
+bitboard generateBishopMask(int square) {
+    bitboard mask = 0;
+    int rank = square / 8;
+    int file = square % 8;
+
+    for (int r = rank + 1, f = file + 1; r <= 6 && f <= 6; r++, f++) mask |= (1ULL << (r * 8 + f));
+    for (int r = rank + 1, f = file - 1; r <= 6 && f >= 1; r++, f--) mask |= (1ULL << (r * 8 + f));
+    for (int r = rank - 1, f = file + 1; r >= 1 && f <= 6; r--, f++) mask |= (1ULL << (r * 8 + f));
+    for (int r = rank - 1, f = file - 1; r >= 1 && f >= 1; r--, f--) mask |= (1ULL << (r * 8 + f));
+    
+    return mask;
+}
+
 bitboard rookAttacks(int square, bitboard occupancy) {
     bitboard attacks = 0ULL;
     
