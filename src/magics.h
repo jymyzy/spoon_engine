@@ -223,6 +223,40 @@ bitboard rookAttacks(int square, bitboard occupancy) {
     return attacks;
 }
 
+bitboard bishopAttacks(int square, bitboard occupancy) {
+    bitboard attacks = 0ULL;
+
+    int rank = square / 8;
+    int file = square % 8;
+
+    for (int r = rank + 1, f = file + 1; r <= 7 && f <= 7; ++r, ++f) {
+        std::cout << "Hävisin pelin: " << square << std::endl;
+        int i = r * 8 + f;
+        attacks |= (1ULL << i);
+        if (occupancy & (1ULL << i)) break;
+    }
+
+    for (int r = rank + 1, f = file - 1; r <= 7 && f >= 0; ++r, --f) {
+        int i = r * 8 + f;
+        attacks |= (1ULL << i);
+        if (occupancy & (1ULL << i)) break;
+    }
+
+    for (int r = rank - 1, f = file + 1; r >= 0 && f <= 7; --r, ++f) {
+        int i = r * 8 + f;
+        attacks |= (1ULL << i);
+        if (occupancy & (1ULL << i)) break;
+    }
+
+    for (int r = rank - 1, f = file - 1; r >= 0 && f >= 0; --r, --f) {
+        int i = r * 8 + f;
+        attacks |= (1ULL << i);
+        if (occupancy & (1ULL << i)) break;
+    }
+
+    return attacks;
+}
+
 // This function is used to generate masks of occupied squares from an index
 bitboard setOccupancy(int index, int bits_in_mask, bitboard mask) {
     bitboard occupancy = 0ULL;
@@ -253,6 +287,19 @@ void precomputeRookMoves(int square) {
         bitboard attacks = rookAttacks(square, occupancy);
         
         RAttackMasks[square][(RMagic[square]*occupancy) >> (64-relevantBits)] = attacks;
+    }
+}
+
+void precomputeBishopMoves(int square) {
+    bitboard mask = generateBishopMask(square);
+    int relevantBits = countSetBits(mask);
+    int occupancyVariations = 1 << relevantBits;
+
+    for (int index = 0; index < occupancyVariations; index++) {
+        bitboard occupancy = setOccupancy(index, relevantBits, mask);
+        bitboard attacks = bishopAttacks(square, occupancy);
+        
+        BAttackMasks[square][(BMagic[square]*occupancy) >> (64-relevantBits)] = attacks;
     }
 }
 
