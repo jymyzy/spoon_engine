@@ -81,70 +81,70 @@ const uint64_t RMagic[64] = {
 };
   
 const uint64_t BMagic[64] = {
-    0x100420000431024ULL,
-    0x280800101073404ULL,
-    0x42000a00840802ULL,
-    0xca800c0410c2ULL,
-    0x81004290941c20ULL,
-    0x400200450020250ULL,
-    0x444a019204022084ULL,
-    0x88610802202109aULL,
-    0x11210a0800086008ULL,
-    0x400a08c08802801ULL,
-    0x1301a0500111c808ULL,
-    0x1280100480180404ULL,
-    0x720009020028445ULL,
-    0x91880a9000010a01ULL,
-    0x31200940150802b2ULL,
-    0x5119080c20000602ULL,
-    0x242400a002448023ULL,
-    0x4819006001200008ULL,
-    0x222c10400020090ULL,
-    0x302008420409004ULL,
-    0x504200070009045ULL,
-    0x210071240c02046ULL,
-    0x1182219000022611ULL,
-    0x400c50000005801ULL,
-    0x4004010000113100ULL,
-    0x2008121604819400ULL,
-    0xc4a4010000290101ULL,
-    0x404a000888004802ULL,
-    0x8820c004105010ULL,
-    0x28280100908300ULL,
-    0x4c013189c0320a80ULL,
-    0x42008080042080ULL,
-    0x90803000c080840ULL,
-    0x2180001028220ULL,
-    0x1084002a040036ULL,
-    0x212009200401ULL,
-    0x128110040c84a84ULL,
-    0x81488020022802ULL,
-    0x8c0014100181ULL,
-    0x2222013020082ULL,
-    0xa00100002382c03ULL,
-    0x1000280001005c02ULL,
-    0x84801010000114cULL,
-    0x480410048000084ULL,
-    0x21204420080020aULL,
-    0x2020010000424a10ULL,
-    0x240041021d500141ULL,
-    0x420844000280214ULL,
-    0x29084a280042108ULL,
-    0x84102a8080a20a49ULL,
-    0x104204908010212ULL,
-    0x40a20280081860c1ULL,
-    0x3044000200121004ULL,
-    0x1001008807081122ULL,
-    0x50066c000210811ULL,
-    0xe3001240f8a106ULL,
-    0x940c0204030020d4ULL,
-    0x619204000210826aULL,
-    0x2010438002b00a2ULL,
-    0x884042004005802ULL,
-    0xa90240000006404ULL,
-    0x500d082244010008ULL,
-    0x28190d00040014e0ULL,
-    0x825201600c082444ULL,
+    2286986400432160,
+    9012736558170240,
+    13661433334071872,
+    298439350210790473,
+    9368616459879601154,
+    2370305324063132672,
+    1165491052027904,
+    5188429517051921538,
+    5514805645860,
+    2314876906392092704,
+    2310914519548889280,
+    596802009483706880,
+    9583661176356667394,
+    4616191821650362528,
+    288863986941214723,
+    3379917031478336,
+    2252075902174592,
+    2308130010849911302,
+    4521200814395648,
+    1132531405572608,
+    1225542341195005952,
+    4623507969733298688,
+    306394429709881376,
+    38497982107649,
+    4710819088983785993,
+    11530345947499332688,
+    11533868179545669713,
+    567348402849800,
+    288375512634499072,
+    849956881600513,
+    9295572723114181121,
+    72339902255339648,
+    9261657925091395113,
+    36316181871764481,
+    1136899322806336,
+    1152925907083854081,
+    326513189188014336,
+    148638587502731392,
+    2344124791465726464,
+    9228158219761813700,
+    9512747142318393384,
+    1267221644976388,
+    9228720612258615298,
+    108989376366593,
+    144194357212218368,
+    4521261206093888,
+    9016003980167233,
+    2309229513621390634,
+    5075362890974400,
+    2306409277063955520,
+    18014542459047940,
+    4801118678300493888,
+    148970771316998160,
+    26457419679744,
+    4614518914565865472,
+    9800976298435183116,
+    396391587820670976,
+    2324180116131942400,
+    2269671189906948,
+    9223653546201749504,
+    4720898309962744832,
+    144119657560802048,
+    17729658814793,
+    20292589028901120
   };
 
 int countSetBits(bitboard bb) {
@@ -230,7 +230,6 @@ bitboard bishopAttacks(int square, bitboard occupancy) {
     int file = square % 8;
 
     for (int r = rank + 1, f = file + 1; r <= 7 && f <= 7; ++r, ++f) {
-        std::cout << "Hävisin pelin: " << square << std::endl;
         int i = r * 8 + f;
         attacks |= (1ULL << i);
         if (occupancy & (1ULL << i)) break;
@@ -311,38 +310,74 @@ bitboard random64()
     return dis(gen);
 }
 
-bitboard generateMagics(int square)
+bitboard generateMagics(int square, bool bishop)
 {
-    while (true)
-    {
-        bitboard testArr[4096] = {};
-        
-        bitboard possibleMagic = random64() & random64() & random64();
-
-        bool foundConfilct = false;
-        bitboard mask = generateRookMask(square);
-        int relevantBits = countSetBits(mask);
-        int occupancyVariations = 1 << relevantBits;
-
-        for (int index = 0; index < occupancyVariations; index++) 
+    if (!bishop) {
+        while (true)
         {
-            bitboard occupancy = setOccupancy(index, relevantBits, mask);
-            bitboard attacks = rookAttacks(square, occupancy);
+            bitboard testArr[4096] = {};
+            
+            bitboard possibleMagic = random64() & random64() & random64();
 
-            if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] == 0)
-            {
-                testArr[((possibleMagic*occupancy) >> (64-relevantBits))] = attacks;
-            } else if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] != attacks)
-            {
+            bool foundConfilct = false;
+            bitboard mask = generateRookMask(square);
+            int relevantBits = countSetBits(mask);
+            int occupancyVariations = 1 << relevantBits;
 
-                foundConfilct = true;
+            for (int index = 0; index < occupancyVariations; index++) 
+            {
+                bitboard occupancy = setOccupancy(index, relevantBits, mask);
+                bitboard attacks = rookAttacks(square, occupancy);
+
+                if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] == 0)
+                {
+                    testArr[((possibleMagic*occupancy) >> (64-relevantBits))] = attacks;
+                } else if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] != attacks)
+                {
+                    foundConfilct = true;
+                }
+            }
+
+            if (!foundConfilct)
+            {
+                return possibleMagic;
+                break;
             }
         }
-
-        if (!foundConfilct)
+    }
+    
+    if (bishop) {
+        while (true)
         {
-            return possibleMagic;
-            break;
+            bitboard testArr[512] = {};
+            
+            bitboard possibleMagic = random64() & random64() & random64();
+
+            bool foundConfilct = false;
+            bitboard mask = generateBishopMask(square);
+            int relevantBits = countSetBits(mask);
+            int occupancyVariations = 1 << relevantBits;
+
+            for (int index = 0; index < occupancyVariations; index++) 
+            {
+                bitboard occupancy = setOccupancy(index, relevantBits, mask);
+                bitboard attacks = bishopAttacks(square, occupancy);
+
+                if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] == 0)
+                {
+                    testArr[((possibleMagic*occupancy) >> (64-relevantBits))] = attacks;
+                } else if (testArr[((possibleMagic*occupancy) >> (64-relevantBits))] != attacks)
+                {
+                    foundConfilct = true;
+                }
+            }
+
+            if (!foundConfilct)
+            {
+                return possibleMagic;
+                break;
+            }
         }
     }
+    
 }

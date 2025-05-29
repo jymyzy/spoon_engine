@@ -363,11 +363,11 @@ class Game
                 knightSquare <<= 1;
             }
 
-            // Rook moves
-            bitboard rookSquare = 1;
+            // Rook and bishop moves
+            bitboard targetSquare = 1;
             for (int i = 0; i < 64; i++)
             {
-                if (bitboards[ROOK_WHITE] & rookSquare)
+                if (bitboards[ROOK_WHITE] & targetSquare)
                 {
                     bitboard occupancy = generateRookMask(i) & ~emptySquares;
                     bitboard attacks = RAttackMasks[i][(occupancy*RMagic[i]) >> (64-RBits[i])] & ~whitePieces;
@@ -380,8 +380,29 @@ class Game
                         }
                     }
                 }
+                
+                if (bitboards[BISHOP_WHITE] & targetSquare)
+                {
+                    bitboard occupancy = generateBishopMask(i) & ~emptySquares;
+                    // bitboard attacks = BAttackMasks[i][(occupancy*BMagic[i]) >> (64-BBits[i])] & ~whitePieces;
+                    
+                    bitboard attacks = bishopAttacks(i, occupancy);
 
-                rookSquare <<= 1;
+                    std::cout << "----------Hävisin pelin-------" << std::endl;
+                    printBitboard(occupancy);
+                    std::cout << "------------------------------" << std::endl;
+                    printBitboard(attacks);
+
+                    for (int j = 0; j < 64; ++j)
+                    {
+                        if (attacks & bitboard(1) << j)
+                        {
+                            moves.push_back(*new Move{i, j});
+                        }
+                    }
+                }
+
+                targetSquare <<= 1;
             }
 
         }
@@ -458,25 +479,35 @@ int main(int argc, char* argv[])
     {
         // Generate new magics
         if (strcmp(argv[i], "-m") == 0) {
-            std::cout << "Generating rook magics!" << std::endl;
+            std::cout << "Generating magics!" << std::endl;
 
-            uint64_t magics[64];
-            std::future<bitboard> futures[64];
+            uint64_t RMagics[64];
+            uint64_t BMagics[64];
+            std::future<bitboard> RFutures[64];
+            std::future<bitboard> BFutures[64];
 
             for (int i = 0; i < 64; i++)
             {
-                futures[i] = std::async(std::launch::async, generateMagics, i);
+                RFutures[i] = std::async(std::launch::async, generateMagics, i, false);
+                BFutures[i] = std::async(std::launch::async, generateMagics, i, true);
             }
 
             for (int i = 0; i < 64; i++)
             {
-                magics[i] = futures[i].get();
+                RMagics[i] = RFutures[i].get();
+                BMagics[i] = BFutures[i].get();
             }          
             
-            // Print rook magics
+            std::cout << "Rook magics:" << std::endl;
             for (int i = 0; i < 64; i++)
             {
-                std::cout << magics[i] << std::endl;
+                std::cout << RMagics[i] << std::endl;
+            }
+
+            std::cout << "Bishop magics:" << std::endl;
+            for (int i = 0; i < 64; i++)
+            {
+                std::cout << BMagics[i] << std::endl;
             }
 
             return 0;
@@ -487,6 +518,7 @@ int main(int argc, char* argv[])
     for (int square = 0; square < 64; square++)
     {
         precomputeRookMoves(square);
+        precomputeBishopMoves(square);
     }    
 
     printBitboard(generateBishopMask(16));
